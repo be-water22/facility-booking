@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Secrets / generated creds
+credentials.txt
+.env
+
+# Seed artifacts (reproducible — regenerate with seed.py)
+seed_output.txt
+seed_data.txt
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Logs
+*.log

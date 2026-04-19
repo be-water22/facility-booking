@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Campus Facility Booking</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6fa;
+    color: #222;
+  }
+  header {
+    background: #1f3a68;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+  nav { display: flex; gap: 0.3rem; }
+  nav button {
+    background: transparent; border: 1px solid rgba(255,255,255,.25);
+    color: #fff; padding: .4rem .9rem; border-radius: 4px; cursor: pointer;
+    font-size: .9rem;
+  }
+  nav button.active { background: #fff; color: #1f3a68; border-color: #fff; }
+  nav button:hover:not(.active) { background: rgba(255,255,255,.1); }
+  .user-chip {
+    display: flex; align-items: center; gap: .75rem;
+    font-size: .9rem;
+  }
+  .wallet-badge {
+    background: #28a745; padding: .25rem .65rem; border-radius: 999px;
+    font-weight: 600; font-size: .85rem;
+  }
+  .role-badge {
+    background: #ffb703; color: #222; padding: .2rem .55rem;
+    border-radius: 4px; font-size: .75rem; font-weight: 600;
+  }
+  .role-badge.admin { background: #dc3545; color: #fff; }
+  header button.logout {
+    background: transparent; border: 1px solid rgba(255,255,255,.4);
+    color: #fff; padding: .3rem .7rem; border-radius: 4px; cursor: pointer;
+    font-size: .85rem;
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 1.5rem; }
+
+  .card {
+    background: #fff; border-radius: 8px; padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    margin-bottom: 1.25rem;
+  }
+  .card h2 { margin-top: 0; font-size: 1.05rem; color: #1f3a68; }
+
+  label { display: block; font-size: .85rem; color: #555; margin-bottom: .25rem; }
+  select, input, button.primary {
+    font-size: .95rem; padding: .5rem .7rem; border-radius: 5px;
+    border: 1px solid #cdd3df; background: #fff;
+  }
+  button.primary {
+    background: #1f3a68; color: #fff; border: none; cursor: pointer;
+    font-weight: 600;
+  }
+  button.primary:hover { background: #294d85; }
+  button.primary:disabled { background: #9aa4bb; cursor: not-allowed; }
+  button.danger {
+    background: #dc3545; color: #fff; border: none; cursor: pointer;
+    padding: .35rem .7rem; border-radius: 4px; font-size: .8rem;
+  }
+  button.danger:hover { background: #b92a37; }
+
+  .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .row > div { flex: 1 1 220px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: .55rem .5rem; font-size: .88rem; border-bottom: 1px solid #eef0f5; }
+  th { background: #f7f9fc; color: #555; font-weight: 600; }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: .6rem;
+    margin-top: .8rem;
+  }
+  .slot-card {
+    border: 1.5px solid #cdd3df;
+    padding: .6rem .75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fff;
+    user-select: none;
+    transition: all .1s;
+  }
+  .slot-card:hover { border-color: #1f3a68; }
+  .slot-card.selected {
+    border-color: #1f3a68; background: #e8efff;
+  }
+  .slot-time { font-weight: 600; font-size: .9rem; }
+  .slot-price { font-size: .8rem; color: #666; margin-top: .2rem; }
+
+  .pill { padding: .15rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+  .pill.Confirmed { background: #d4edda; color: #155724; }
+  .pill.Pending   { background: #fff3cd; color: #856404; }
+  .pill.Cancelled { background: #f8d7da; color: #721c24; }
+
+  .tx-deposit { color: #155724; font-weight: 600; }
+  .tx-payment { color: #721c24; }
+  .tx-refund  { color: #004085; }
+
+  .muted { color: #888; font-size: .9rem; }
+  .error { background: #f8d7da; color: #721c24; padding: .7rem 1rem; border-radius: 5px; margin: .5rem 0; }
+  .success { background: #d4edda; color: #155724; padding: .7rem 1rem; border-radius: 5px; margin: .5rem 0; }
+
+  /* Login screen */
+  .login-wrap {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1f3a68 0%, #4a6fa5 100%);
+  }
+  .login-box {
+    background: #fff; padding: 2rem 2.5rem; border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2); width: 420px; max-width: 95vw;
+  }
+  .login-box h1 { margin: 0 0 .3rem; color: #1f3a68; }
+  .login-box p  { margin: 0 0 1.5rem; color: #666; font-size: .9rem; }
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1rem; }
+  .tabs button {
+    flex: 1; padding: .6rem; background: #f0f2f7; border: none;
+    border-radius: 5px; cursor: pointer; font-weight: 600; color: #555;
+  }
+  .tabs button.active { background: #1f3a68; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- ============================ LOGIN SCREEN ============================ -->
+<div id="login" class="login-wrap">
+  <div class="login-box">
+    <h1>Campus Facility Booking</h1>
+    <p>Sign in with your email and 8-character password.</p>
+
+    <label for="login-email">Email</label>
+    <input type="email" id="login-email" placeholder="name@iitk.ac.in" style="width:100%; margin-bottom: .8rem;" />
+
+    <label for="login-pwd">Password <span class="muted" style="font-weight:normal;">(4 letters + 4 digits)</span></label>
+    <input type="password" id="login-pwd" placeholder="••••••••" maxlength="8" style="width:100%; margin-bottom: 1rem;" />
+
+    <button class="primary" style="width:100%" onclick="doLogin()">Log in</button>
+
+    <div id="login-msg" style="margin-top:.8rem;"></div>
+
+    <p class="muted" style="margin-top:1.2rem; font-size:.8rem; line-height:1.45;">
+      Each user has a unique password (format: 4 lowercase letters + 4 digits).
+      The full list is in <code>credentials.txt</code> in the project directory.<br>
+      <b>Examples:</b> <code>admin1@iitk.ac.in</code>,
+                      <code>aryan.maharaj91@iitk.ac.in</code>.
+    </p>
+  </div>
+</div>
+
+<!-- ============================ APP ============================ -->
+<div id="app" style="display:none;">
+  <header>
+    <h1>Campus Facility Booking</h1>
+    <nav>
+      <button id="nav-profile"      class="active" onclick="showView('profile')">Profile</button>
+      <button id="nav-booking"                     onclick="showView('booking')">Book a Slot</button>
+      <button id="nav-transactions"                onclick="showView('transactions')">My Transactions</button>
+      <button id="nav-admin"      style="display:none;" onclick="showView('admin')">All Transactions</button>
+      <button id="nav-util"       style="display:none;" onclick="showView('util')">Utilization</button>
+      <button id="nav-facilities" style="display:none;" onclick="showView('facilities')">Facilities</button>
+    </nav>
+    <div class="user-chip">
+      <span id="chip-name"></span>
+      <span id="chip-role"  class="role-badge"></span>
+      <span id="chip-wallet" class="wallet-badge">₹0</span>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================ PROFILE ================ -->
+    <section id="view-profile">
+      <div class="card">
+        <h2>Profile</h2>
+        <div id="profile-body"></div>
+      </div>
+      <div class="card">
+        <h2>Top Up Wallet</h2>
+        <div class="row" style="align-items:flex-end;">
+          <div style="flex:0 0 180px;">
+            <label>Amount (₹)</label>
+            <input type="number" id="topup-amount" min="1" step="1" placeholder="500" />
+          </div>
+          <div style="flex:0 0 auto;">
+            <button class="primary" onclick="doTopUp()">Deposit</button>
+          </div>
+        </div>
+        <div id="topup-msg"></div>
+      </div>
+      <div class="card">
+        <h2>My Recent Bookings</h2>
+        <div id="profile-bookings"></div>
+      </div>
+    </section>
+
+    <!-- ================ BOOKING ================ -->
+    <section id="view-booking" style="display:none;">
+      <div class="card">
+        <h2>Book a Facility</h2>
+        <div class="row">
+          <div>
+            <label>Facility type</label>
+            <select id="filter-type" onchange="onTypeChange()"></select>
+          </div>
+          <div>
+            <label>Facility</label>
+            <select id="filter-facility" onchange="onFacilityChange()"></select>
+          </div>
+          <div>
+            <label>Date</label>
+            <input type="date" id="filter-date" onchange="loadSlots()">
+          </div>
+          <div id="room-wrap" style="display:none;">
+            <label>Room</label>
+            <select id="filter-room" onchange="loadSlots()"></select>
+          </div>
+        </div>
+
+        <div id="slot-area" style="margin-top:1rem;">
+          <p class="muted">Pick a facility and a date to see available slots.</p>
+        </div>
+
+        <div id="book-footer" style="margin-top:1rem; display:none;">
+          <div id="book-summary" class="muted" style="margin-bottom:.6rem;"></div>
+          <button class="primary" id="book-btn" onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+
+        <div id="book-msg"></div>
+      </div>
+    </section>
+
+    <!-- ================ TRANSACTIONS ================ -->
+    <section id="view-transactions" style="display:none;">
+      <div class="card">
+        <h2>Wallet Transactions</h2>
+        <div id="tx-body"></div>
+      </div>
+    </section>
+
+    <!-- ================ ADMIN: ALL TRANSACTIONS ================ -->
+    <section id="view-admin" style="display:none;">
+      <div class="card">
+        <h2>All User Transactions <span class="role-badge admin" style="margin-left:.4rem;">Admin</span></h2>
+        <div class="row" style="margin-bottom:.6rem;">
+          <div>
+            <label>Filter by type</label>
+            <select id="admin-filter-type" onchange="renderAdminTx()">
+              <option value="">All</option>
+              <option value="Deposit">Deposit</option>
+              <option value="Payment">Payment</option>
+              <option value="Refund">Refund</option>
+            </select>
+          </div>
+          <div>
+            <label>Search by user name</label>
+            <input type="text" id="admin-filter-name" oninput="renderAdminTx()" placeholder="e.g. Aryan">
+          </div>
+        </div>
+        <div id="admin-tx-summary" class="muted" style="margin-bottom:.5rem;"></div>
+        <div id="admin-tx-body"></div>
+      </div>
+    </section>
+
+    <!-- ================ ADMIN: UTILIZATION ================ -->
+    <section id="view-util" style="display:none;">
+      <div class="card">
+        <h2>Facility Utilization <span class="role-badge admin" style="margin-left:.4rem;">Admin</span></h2>
+        <div class="row" style="margin-bottom:.6rem;">
+          <div><label>From date</label><input type="date" id="util-from" onchange="loadUtil()"></div>
+          <div><label>To date</label>  <input type="date" id="util-to"   onchange="loadUtil()"></div>
+          <div><label>&nbsp;</label>   <button class="primary" onclick="clearUtilDates()">Clear dates (show all time)</button></div>
+        </div>
+        <div id="util-body"></div>
+      </div>
+    </section>
+
+    <!-- ================ ADMIN: FACILITIES (toggle operational) ================ -->
+    <section id="view-facilities" style="display:none;">
+      <div class="card">
+        <h2>Facility Maintenance <span class="role-badge admin" style="margin-left:.4rem;">Admin</span></h2>
+        <p class="muted">Toggle a facility off to take it out of service — it will disappear from the booking view.</p>
+        <div id="fac-body"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ============================ STATE ============================
+const API = "/api";
+let state = {
+  currentUser: null,
+  facilities: [],
+  types: [],
+  selectedFacility: null,
+  selectedRoom: null,
+  availableSlots: [],
+  selectedSlotIds: new Set(),
+  adminTx: [],   // cached all-transactions list for admins
+};
+
+// ============================ BOOT ============================
+document.addEventListener("DOMContentLoaded", () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  document.getElementById("filter-date").value = d.toISOString().slice(0,10);
+
+  // Enter-to-submit on login
+  document.getElementById("login-email").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  document.getElementById("login-pwd").addEventListener("keydown",   e => { if (e.key === "Enter") doLogin(); });
+});
+
+// ============================ API HELPERS ============================
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "Request failed");
+  }
+  return res.json();
+}
+
+// ============================ LOGIN ============================
+async function doLogin() {
+  const msg = document.getElementById("login-msg");
+  msg.innerHTML = "";
+  const email = document.getElementById("login-email").value.trim();
+  const pwd   = document.getElementById("login-pwd").value;
+  if (!email || !pwd) {
+    msg.innerHTML = `<div class="error">Please enter your email and password.</div>`;
+    return;
+  }
+  if (!/^[A-Za-z]{4}[0-9]{4}$/.test(pwd)) {
+    msg.innerHTML = `<div class="error">Password must be 4 letters followed by 4 digits.</div>`;
+    return;
+  }
+  try {
+    state.currentUser = await api("/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password: pwd }),
+    });
+    document.getElementById("login-pwd").value = "";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    // Admin-only nav visibility
+    const isAdmin = state.currentUser.base_type === "Admin";
+    for (const id of ["nav-admin", "nav-util", "nav-facilities"]) {
+      document.getElementById(id).style.display = isAdmin ? "inline-block" : "none";
+    }
+
+    renderChip();
+    showView("profile");
+    await initBookingView();
+  } catch (e) {
+    msg.innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+function logout() {
+  state.currentUser = null;
+  state.selectedFacility = null;
+  state.selectedRoom = null;
+  state.selectedSlotIds.clear();
+  state.adminTx = [];
+  document.getElementById("app").style.display = "none";
+  document.getElementById("login").style.display = "flex";
+  document.getElementById("login-email").value = "";
+  document.getElementById("login-msg").innerHTML = "";
+}
+
+// ============================ NAV ============================
+function showView(name) {
+  for (const v of ["profile", "booking", "transactions", "admin", "util", "facilities"]) {
+    document.getElementById("view-" + v).style.display = v === name ? "block" : "none";
+    const btn = document.getElementById("nav-" + v);
+    if (btn) btn.classList.toggle("active", v === name);
+  }
+  if (name === "profile")      renderProfile();
+  if (name === "transactions") renderTransactions();
+  if (name === "admin")        loadAdminTx();
+  if (name === "util")         loadUtil();
+  if (name === "facilities")   loadFacilitiesAdmin();
+}
+
+function renderChip() {
+  const u = state.currentUser;
+  document.getElementById("chip-name").textContent = u.name;
+  const roleEl = document.getElementById("chip-role");
+  roleEl.textContent = u.base_type;
+  roleEl.classList.toggle("admin", u.base_type === "Admin");
+  document.getElementById("chip-wallet").textContent = "₹" + Number(u.wallet_balance).toFixed(2);
+}
+
+async function refreshUser() {
+  state.currentUser = await api(`/users/${state.currentUser.user_id}`);
+  renderChip();
+}
+
+// ============================ PROFILE ============================
+async function renderProfile() {
+  const u = state.currentUser;
+  const body = document.getElementById("profile-body");
+  const rows = [
+    ["User ID",        u.user_id],
+    ["Name",           u.name],
+    ["Email",          u.email],
+    ["Role",           u.base_type],
+    ["Wallet Balance", "₹" + Number(u.wallet_balance).toFixed(2)],
+    ["Member Since",   new Date(u.created_at).toLocaleString()],
+  ];
+  if (u.roll_number) rows.push(["Roll Number", u.roll_number]);
+  if (u.org_type)    rows.push(["Organization Type", u.org_type]);
+
+  body.innerHTML = `<table>${
+    rows.map(([k,v]) => `<tr><th style="width:180px">${k}</th><td>${v}</td></tr>`).join("")
+  }</table>`;
+
+  const bookings = await api(`/users/${u.user_id}/bookings`);
+  const bbody = document.getElementById("profile-bookings");
+  if (!bookings.length) {
+    bbody.innerHTML = `<p class="muted">No bookings yet.</p>`;
+    return;
+  }
+  bbody.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>ID</th><th>Date</th><th>Facility</th><th>Slots</th>
+        <th>Total</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>${bookings.map(renderBookingRow).join("")}</tbody>
+    </table>`;
+}
+
+function renderBookingRow(b) {
+  const slots = b.slots.map(s => {
+    const room = s.room_number ? ` [${s.hall_number ? "H"+s.hall_number+"-" : ""}${s.room_number}]` : "";
+    return `${s.start_time}-${s.end_time}${room}`;
+  }).join(", ");
+  const cancelBtn = b.status !== "Cancelled"
+    ? `<button class="danger" onclick="cancelBooking(${b.booking_id})">Cancel</button>` : "";
+  return `<tr>
+    <td>#${b.booking_id}</td>
+    <td>${b.booking_date}</td>
+    <td>${b.facility_name}<br><span class="muted">${b.facility_type}</span></td>
+    <td>${slots}</td>
+    <td>₹${Number(b.total_cost).toFixed(2)}</td>
+    <td><span class="pill ${b.status}">${b.status}</span></td>
+    <td>${cancelBtn}</td>
+  </tr>`;
+}
+
+async function cancelBooking(id) {
+  if (!confirm("Cancel booking #" + id + "? Your wallet will be refunded.")) return;
+  try {
+    await api(`/bookings/${id}/cancel?user_id=${state.currentUser.user_id}`, { method: "POST" });
+    await refreshUser();
+    await renderProfile();
+  } catch (e) {
+    alert("Cancellation failed: " + e.message);
+  }
+}
+
+// ============================ TRANSACTIONS ============================
+async function renderTransactions() {
+  const u = state.currentUser;
+  const txs = await api(`/users/${u.user_id}/transactions`);
+  const body = document.getElementById("tx-body");
+  if (!txs.length) {
+    body.innerHTML = `<p class="muted">No transactions yet.</p>`;
+    return;
+  }
+  body.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>When</th><th>Type</th><th>Amount</th><th>Description</th>
+      </tr></thead>
+      <tbody>${txs.map(t => {
+        const sign = t.transaction_type === "Payment" ? "−" : "+";
+        const cls = "tx-" + t.transaction_type.toLowerCase();
+        return `<tr>
+          <td>${t.transaction_id}</td>
+          <td>${new Date(t.created_at).toLocaleString()}</td>
+          <td>${t.transaction_type}</td>
+          <td class="${cls}">${sign} ₹${Number(t.amount).toFixed(2)}</td>
+          <td>${t.description || ""}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table>`;
+}
+
+// ============================ BOOKING VIEW ============================
+async function initBookingView() {
+  state.types = await api("/facility-types");
+  const ft = document.getElementById("filter-type");
+  ft.innerHTML = `<option value="">(all types)</option>` +
+    state.types.map(t => `<option value="${t}">${t.replace(/_/g," ")}</option>`).join("");
+  await onTypeChange();
+}
+
+async function onTypeChange() {
+  const t = document.getElementById("filter-type").value;
+  state.facilities = await api("/facilities" + (t ? `?type=${t}` : ""));
+  const ff = document.getElementById("filter-facility");
+  ff.innerHTML = state.facilities.map(f =>
+    `<option value="${f.facility_id}">${f.name} (cap. ${f.capacity})</option>`
+  ).join("");
+  if (state.facilities.length) await onFacilityChange();
+  else { state.selectedFacility = null; clearSlots(); }
+}
+
+async function onFacilityChange() {
+  const fid = parseInt(document.getElementById("filter-facility").value);
+  state.selectedFacility = state.facilities.find(f => f.facility_id === fid) || null;
+  state.selectedRoom = null;
+  state.selectedSlotIds.clear();
+
+  const roomTypes = ["Hall_Guest_Room", "Visitor_Hostel_Room"];
+  const roomWrap = document.getElementById("room-wrap");
+  if (state.selectedFacility && roomTypes.includes(state.selectedFacility.type)) {
+    const rooms = await api(`/facilities/${fid}/rooms`);
+    const rsel = document.getElementById("filter-room");
+    rsel.innerHTML = rooms.map(r => {
+      const lbl = r.hall_number ? `Hall ${r.hall_number} – Room ${r.room_number}` : r.room_number;
+      return `<option value="${r.room_id}">${lbl}</option>`;
+    }).join("");
+    state.selectedRoom = rooms[0]?.room_id ?? null;
+    rsel.value = state.selectedRoom;
+    roomWrap.style.display = "block";
+  } else {
+    roomWrap.style.display = "none";
+  }
+  await loadSlots();
+}
+
+async function loadSlots() {
+  document.getElementById("book-msg").innerHTML = "";
+  if (!state.selectedFacility) return clearSlots();
+  const fid = state.selectedFacility.facility_id;
+  const date = document.getElementById("filter-date").value;
+  if (!date) return clearSlots();
+
+  const roomSel = document.getElementById("filter-room");
+  state.selectedRoom = document.getElementById("room-wrap").style.display !== "none"
+    ? parseInt(roomSel.value) : null;
+
+  const url = `/facilities/${fid}/availability?date=${date}` +
+              (state.selectedRoom ? `&room_id=${state.selectedRoom}` : "");
+  state.availableSlots = await api(url);
+  state.selectedSlotIds.clear();
+  renderSlots();
+}
+
+function clearSlots() {
+  state.availableSlots = [];
+  state.selectedSlotIds.clear();
+  document.getElementById("slot-area").innerHTML = `<p class="muted">Pick a facility and a date.</p>`;
+  document.getElementById("book-footer").style.display = "none";
+}
+
+function renderSlots() {
+  const area = document.getElementById("slot-area");
+  if (!state.availableSlots.length) {
+    area.innerHTML = `<p class="muted">No available slots for this date. Try another day.</p>`;
+    document.getElementById("book-footer").style.display = "none";
+    return;
+  }
+  area.innerHTML = `
+    <p class="muted">${state.availableSlots.length} slot(s) available. Tap to select.</p>
+    <div class="slot-grid">
+      ${state.availableSlots.map(s => `
+        <div class="slot-card ${state.selectedSlotIds.has(s.slot_id) ? "selected" : ""}"
+             data-id="${s.slot_id}" data-price="${s.price}">
+          <div class="slot-time">${s.start_time} – ${s.end_time}</div>
+          <div class="slot-price">${Number(s.price) === 0 ? "Free" : "₹" + Number(s.price).toFixed(2)}</div>
+        </div>
+      `).join("")}
+    </div>`;
+  area.querySelectorAll(".slot-card").forEach(el => {
+    el.addEventListener("click", () => {
+      const id = parseInt(el.dataset.id);
+      if (state.selectedSlotIds.has(id)) state.selectedSlotIds.delete(id);
+      else state.selectedSlotIds.add(id);
+      el.classList.toggle("selected");
+      updateBookFooter();
+    });
+  });
+  updateBookFooter();
+}
+
+function updateBookFooter() {
+  const footer = document.getElementById("book-footer");
+  if (!state.selectedSlotIds.size) { footer.style.display = "none"; return; }
+  const total = state.availableSlots
+    .filter(s => state.selectedSlotIds.has(s.slot_id))
+    .reduce((t, s) => t + Number(s.price), 0);
+  const have = Number(state.currentUser.wallet_balance);
+  const enough = have >= total;
+  document.getElementById("book-summary").innerHTML =
+    `Total: <b>₹${total.toFixed(2)}</b> · Wallet: ₹${have.toFixed(2)} ` +
+    (enough ? "" : `<span style="color:#dc3545;">(insufficient balance)</span>`);
+  document.getElementById("book-btn").disabled = !enough;
+  footer.style.display = "block";
+}
+
+// ============================ ADMIN: ALL TRANSACTIONS ============================
+async function loadAdminTx() {
+  try {
+    state.adminTx = await api(`/admin/transactions?admin_id=${state.currentUser.user_id}`);
+    renderAdminTx();
+  } catch (e) {
+    document.getElementById("admin-tx-body").innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+function renderAdminTx() {
+  const typeF = document.getElementById("admin-filter-type").value;
+  const nameF = document.getElementById("admin-filter-name").value.trim().toLowerCase();
+  const rows = state.adminTx.filter(t =>
+    (!typeF || t.transaction_type === typeF) &&
+    (!nameF || t.user_name.toLowerCase().includes(nameF))
+  );
+
+  const total = rows.reduce((t, x) =>
+    t + (x.transaction_type === "Payment" ? -Number(x.amount) : Number(x.amount)), 0);
+  document.getElementById("admin-tx-summary").textContent =
+    `${rows.length} transaction(s)  ·  Net flow: ₹${total.toFixed(2)}`;
+
+  const body = document.getElementById("admin-tx-body");
+  if (!rows.length) { body.innerHTML = `<p class="muted">No matching transactions.</p>`; return; }
+  body.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>#</th><th>When</th><th>User</th><th>Role</th>
+        <th>Type</th><th>Amount</th><th>Description</th>
+      </tr></thead>
+      <tbody>${rows.map(t => {
+        const sign = t.transaction_type === "Payment" ? "−" : "+";
+        const cls = "tx-" + t.transaction_type.toLowerCase();
+        return `<tr>
+          <td>${t.transaction_id}</td>
+          <td>${new Date(t.created_at).toLocaleString()}</td>
+          <td>${t.user_name} <span class="muted">#${t.user_id}</span></td>
+          <td>${t.base_type}</td>
+          <td>${t.transaction_type}</td>
+          <td class="${cls}">${sign} ₹${Number(t.amount).toFixed(2)}</td>
+          <td>${t.description || ""}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table>`;
+}
+
+// ============================ WALLET TOP-UP ============================
+async function doTopUp() {
+  const msg = document.getElementById("topup-msg");
+  msg.innerHTML = "";
+  const amt = parseFloat(document.getElementById("topup-amount").value);
+  if (!amt || amt <= 0) {
+    msg.innerHTML = `<div class="error">Enter a positive amount.</div>`;
+    return;
+  }
+  try {
+    await api("/wallet/deposit", {
+      method: "POST",
+      body: JSON.stringify({ user_id: state.currentUser.user_id, amount: amt }),
+    });
+    document.getElementById("topup-amount").value = "";
+    await refreshUser();
+    renderProfile();
+    msg.innerHTML = `<div class="success">Deposited ₹${amt.toFixed(2)}.</div>`;
+  } catch (e) {
+    msg.innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+// ============================ ADMIN: UTILIZATION ============================
+async function loadUtil() {
+  const from = document.getElementById("util-from").value || "";
+  const to   = document.getElementById("util-to").value   || "";
+  let url = `/admin/utilization?admin_id=${state.currentUser.user_id}`;
+  if (from) url += `&date_from=${from}`;
+  if (to)   url += `&date_to=${to}`;
+  try {
+    const rows = await api(url);
+    const body = document.getElementById("util-body");
+    if (!rows.length) { body.innerHTML = `<p class="muted">No facilities.</p>`; return; }
+    body.innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Facility</th><th>Type</th><th>Capacity</th><th>Operational</th>
+          <th>Bookings</th><th>Slots booked</th><th>Revenue</th>
+        </tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td>${r.name}</td>
+            <td>${r.type}</td>
+            <td>${r.capacity}</td>
+            <td>${r.is_operational ? "✓" : "<span style='color:#dc3545'>off</span>"}</td>
+            <td>${r.bookings}</td>
+            <td>${r.slots_booked}</td>
+            <td>₹${Number(r.revenue).toFixed(2)}</td>
+          </tr>`).join("")}</tbody>
+      </table>`;
+  } catch (e) {
+    document.getElementById("util-body").innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+function clearUtilDates() {
+  document.getElementById("util-from").value = "";
+  document.getElementById("util-to").value   = "";
+  loadUtil();
+}
+
+// ============================ ADMIN: FACILITIES TOGGLE ============================
+async function loadFacilitiesAdmin() {
+  try {
+    const rows = await api(`/admin/utilization?admin_id=${state.currentUser.user_id}`);
+    const body = document.getElementById("fac-body");
+    body.innerHTML = `
+      <table>
+        <thead><tr><th>Facility</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>${rows.map(r => `
+          <tr>
+            <td>${r.name}</td>
+            <td>${r.type}</td>
+            <td>${r.is_operational ? "<span style='color:#155724;font-weight:600'>Operational</span>"
+                                    : "<span style='color:#721c24;font-weight:600'>Off</span>"}</td>
+            <td>
+              <button class="${r.is_operational ? 'danger' : 'primary'}"
+                      onclick="toggleFacility(${r.facility_id}, ${!r.is_operational})">
+                ${r.is_operational ? "Take off-line" : "Bring on-line"}
+              </button>
+            </td>
+          </tr>`).join("")}</tbody>
+      </table>`;
+  } catch (e) {
+    document.getElementById("fac-body").innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+async function toggleFacility(facility_id, makeActive) {
+  try {
+    await api(`/admin/facilities/${facility_id}/operational`, {
+      method: "PATCH",
+      body: JSON.stringify({ admin_id: state.currentUser.user_id, is_operational: makeActive }),
+    });
+    await loadFacilitiesAdmin();
+  } catch (e) {
+    alert("Toggle failed: " + e.message);
+  }
+}
+
+async function confirmBooking() {
+  const msg = document.getElementById("book-msg");
+  msg.innerHTML = "";
+  try {
+    const result = await api("/bookings", {
+      method: "POST",
+      body: JSON.stringify({
+        user_id:      state.currentUser.user_id,
+        facility_id:  state.selectedFacility.facility_id,
+        booking_date: document.getElementById("filter-date").value,
+        slot_ids:     [...state.selectedSlotIds],
+        room_id:      state.selectedRoom,
+      }),
+    });
+    msg.innerHTML = `<div class="success">Booking #${result.booking_id} confirmed. Charged ₹${result.total_cost}.</div>`;
+    await refreshUser();
+    await loadSlots();
+  } catch (e) {
+    msg.innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+</script>
+</body>
+</html>
