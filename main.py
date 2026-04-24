@@ -246,6 +246,13 @@ def facility_availability(
 def create_booking(payload: BookingCreate, conn=Depends(get_db)):
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Acquire per-(slot, date) advisory locks before any inserts so that
+            # concurrent requests for the same slot queue up instead of racing.
+            # Sorting slot IDs prevents deadlock when multiple slots are booked.
+            date_int = (payload.booking_date - _date(1970, 1, 1)).days
+            for sid in sorted(payload.slot_ids):
+                cur.execute("SELECT pg_advisory_xact_lock(%s, %s);", (sid, date_int))
+
             cur.execute(
                 "SELECT user_id, wallet_balance FROM Users WHERE user_id = %s FOR UPDATE;",
                 (payload.user_id,),
