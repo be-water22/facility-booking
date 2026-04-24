@@ -418,6 +418,7 @@ async function refreshUser() {
 
 // ============================ PROFILE ============================
 async function renderProfile() {
+  await refreshUser();
   const u = state.currentUser;
   const body = document.getElementById("profile-body");
   const rows = [
@@ -558,6 +559,8 @@ async function loadSlots() {
   const fid = state.selectedFacility.facility_id;
   const date = document.getElementById("filter-date").value;
   if (!date) return clearSlots();
+
+  await refreshUser();
 
   const roomSel = document.getElementById("filter-room");
   state.selectedRoom = document.getElementById("room-wrap").style.display !== "none"
