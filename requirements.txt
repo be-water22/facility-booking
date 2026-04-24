@@ -1,9 +1,9 @@
-psycopg2-binary==2.9.11
-faker==40.15.0
-fastapi==0.136.0
-uvicorn[standard]==0.44.0
-pydantic==2.13.2
+psycopg2-binary
+faker
+fastapi
+uvicorn[standard]
+pydantic
 
 # Testing
-pytest==9.0.3
-httpx==0.28.1
+pytest
+httpx
