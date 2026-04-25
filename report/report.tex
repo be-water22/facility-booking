@@ -366,17 +366,19 @@ Indexes accelerate the most frequent queries the API issues:
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}X@{}}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{}>{\scriptsize\ttfamily\raggedright\arraybackslash}p{4.4cm}>{\scriptsize\ttfamily\raggedright\arraybackslash}p{5.4cm}>{\small\raggedright\arraybackslash}X@{}}
 \toprule
-\textbf{Index} & \textbf{Table} & \textbf{Why} \\
+{\normalfont\textbf{Index}} & {\normalfont\textbf{Table}} & {\normalfont\textbf{Why}} \\
 \midrule
-\texttt{idx\_facility\_slots\_} \texttt{facility} & \texttt{Facility\_Slots} \texttt{(facility\_id)} & Availability lookup is always filtered by facility. \\
-\texttt{idx\_bookings\_date\_} \texttt{status} & \texttt{Bookings} \texttt{(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
-\texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots} \texttt{(slot\_id)} & Double-booking trigger queries by \texttt{slot\_id}; without this, every insert scans the table. \\
-\texttt{idx\_wallet\_tx\_user\_} \texttt{time} & \texttt{Wallet\_Transactions} \texttt{(user\_id,} \texttt{created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
-\texttt{idx\_facility\_rooms\_} \texttt{facility} & \texttt{Facility\_Rooms} \texttt{(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
+idx\_facility\_slots\_facility & Facility\_Slots(facility\_id) & Availability lookup is always filtered by facility. \\
+idx\_bookings\_date\_status & Bookings(booking\_date, status) & Admin utilization report and availability checks scan by date+status. \\
+idx\_booking\_slots\_slot & Booking\_Slots(slot\_id) & Double-booking trigger queries by slot\_id; without this, every insert scans the table. \\
+idx\_wallet\_tx\_user\_time & Wallet\_Transactions(user\_id, created\_at DESC) & "My Transactions" page sorts a user's ledger newest-first. \\
+idx\_facility\_rooms\_facility & Facility\_Rooms(facility\_id) & Room dropdown listing for hall guest rooms / visitor hostel. \\
 \bottomrule
 \end{tabularx}
+\renewcommand{\arraystretch}{1}
 \caption{Indexes for performance}
 \end{table}
 
