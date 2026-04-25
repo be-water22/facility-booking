@@ -45,7 +45,8 @@
 \title{
     \vspace{-1cm}
     \textbf{\Huge Campus Facility Booking System}\\[0.3cm]
-    \Large A Final-Year DBMS Project
+    \Large CS315: Database Management Systems \\[0.1cm]
+    \large Course Project Report
 }
 \author{
     Abhishek Meena (220048) \\
@@ -362,15 +363,17 @@ Indexes accelerate the most frequent queries the API issues:
 
 \begin{table}[h]
 \centering
-\begin{tabularx}{\textwidth}{llX}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Index} & \textbf{Table} & \textbf{Why} \\
 \midrule
-\texttt{idx\_facility\_slots\_facility} & \texttt{Facility\_Slots(facility\_id)} & Availability lookup is always filtered by facility. \\
-\texttt{idx\_bookings\_date\_status} & \texttt{Bookings(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
-\texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots(slot\_id)} & The double-booking trigger queries Booking\_Slots by slot\_id --- without this, every insert would scan the table. \\
-\texttt{idx\_wallet\_tx\_user\_time} & \texttt{Wallet\_Transactions(user\_id, created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
-\texttt{idx\_facility\_rooms\_facility} & \texttt{Facility\_Rooms(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
+\texttt{idx\_facility\_slots\_facility} & \texttt{Facility\_Slots} \texttt{(facility\_id)} & Availability lookup is always filtered by facility. \\
+\texttt{idx\_bookings\_date\_status} & \texttt{Bookings} \texttt{(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
+\texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots} \texttt{(slot\_id)} & Double-booking trigger queries by \texttt{slot\_id}; without this, every insert scans the table. \\
+\texttt{idx\_wallet\_tx\_user\_time} & \texttt{Wallet\_Transactions} \texttt{(user\_id, created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
+\texttt{idx\_facility\_rooms\_facility} & \texttt{Facility\_Rooms} \texttt{(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
 \bottomrule
 \end{tabularx}
 \caption{Indexes for performance}
@@ -464,7 +467,8 @@ The project includes both a \textbf{manual UI testing plan} (\texttt{TESTING.md}
 
 \begin{table}[h]
 \centering
-\begin{tabularx}{\textwidth}{lll}
+\small
+\begin{tabularx}{\textwidth}{@{}lXc@{}}
 \toprule
 \textbf{ACID Property} & \textbf{Test File} & \textbf{Number of Tests} \\
 \midrule
@@ -525,25 +529,28 @@ Books a paid slot, then immediately cancels. Verifies: net wallet change = 0, bo
 
 These hit PostgreSQL directly (bypassing the API) to verify every \texttt{CHECK}, \texttt{UNIQUE}, foreign-key, and trigger fires when violated.
 
-\begin{longtable}{lp{3.5cm}p{8cm}}
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}lp{6cm}p{8.5cm}@{}}
 \toprule
 \textbf{\#} & \textbf{Test} & \textbf{What it verifies} \\
 \midrule
 \endhead
 9.1  & \texttt{password\_format\_check}              & Password regex \texttt{[A-Za-z]\{4\}[0-9]\{4\}}. \\
 9.2  & \texttt{wallet\_balance\_never\_negative}     & \texttt{wallet\_balance >= 0}. \\
-9.3  & \texttt{base\_type\_check}                    & \texttt{base\_type IN ('Student','Faculty','Admin','Organization')}. \\
+9.3  & \texttt{base\_type\_check}                    & \texttt{base\_type IN} \texttt{('Student','Faculty',} \texttt{'Admin','Organization')}. \\
 9.4  & \texttt{email\_unique}                        & \texttt{Users.email UNIQUE}. \\
 9.5  & \texttt{wallet\_txn\_amount\_positive}        & \texttt{Wallet\_Transactions.amount > 0}. \\
-9.6  & \texttt{facility\_slot\_endtime\_after\_start} & \texttt{end\_time > start\_time}. \\
-9.7  & \texttt{facility\_slot\_unique}               & \texttt{UNIQUE(facility\_id, start\_time, end\_time)}. \\
+9.6  & \texttt{facility\_slot\_endtime\_} \texttt{after\_start} & \texttt{end\_time > start\_time}. \\
+9.7  & \texttt{facility\_slot\_unique}               & \texttt{UNIQUE(facility\_id,} \texttt{start\_time, end\_time)}. \\
 9.8  & \texttt{double\_booking\_trigger}             & \texttt{prevent\_double\_booking} fires on duplicate slot+date. \\
-9.9  & \texttt{ground\_booking\_trigger\_blocks\_non\_org} & Trigger blocks a Student from booking OAT. \\
+9.9  & \texttt{ground\_booking\_trigger\_} \texttt{blocks\_non\_org} & Trigger blocks a Student from booking OAT. \\
 9.10 & \texttt{org\_CAN\_book\_OAT}                  & Counter-test: Organization succeeds where Student failed. \\
-9.11 & \texttt{delete\_user\_with\_bookings\_is\_restricted} & \texttt{ON DELETE RESTRICT} on \texttt{Bookings.user\_id}. \\
+9.11 & \texttt{delete\_user\_with\_bookings\_} \texttt{is\_restricted} & \texttt{ON DELETE RESTRICT} on \texttt{Bookings.user\_id}. \\
 \bottomrule
 \caption{Every constraint test in test\_constraints.py}
 \end{longtable}
+}
 
 \subsection{Test Infrastructure}
 
