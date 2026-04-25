@@ -46,6 +46,11 @@ DB_CONFIG = {
 app = FastAPI(title="Campus Facility Booking System")
 
 
+@app.get("/api/health", tags=["health"])
+def health_check():
+    return {"status": "ok"}
+
+
 def get_db() -> Generator:
     conn = psycopg2.connect(**DB_CONFIG)
     try:
