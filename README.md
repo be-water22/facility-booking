@@ -58,6 +58,21 @@ psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';
 During the PostgreSQL installer, you will be asked to set a password for the `postgres` user.
 **Set it to `postgres`** so it matches the app's default config.
 
+After installing, add PostgreSQL to your PATH so `psql` and `createdb` work from any terminal:
+
+1. Open **Start** → search **"Environment Variables"** → click **"Edit the system environment variables"**
+2. Click **"Environment Variables"** → under **System variables**, find and select **Path** → click **Edit**
+3. Click **New** and add:
+   ```
+   C:\Program Files\PostgreSQL\16\bin
+   ```
+4. Click **OK** on all dialogs to save
+5. **Close and reopen** your terminal for the change to take effect
+6. Verify it works:
+   ```bash
+   psql --version
+   ```
+
 ---
 
 **Linux (Ubuntu/Debian):**
@@ -143,6 +158,33 @@ Swagger API docs are at **http://localhost:8000/docs**
 
 ---
 
+## Viewing the Database (TablePlus)
+
+TablePlus is a free GUI tool to browse and query your PostgreSQL database visually.
+
+**Install:**
+```bash
+# Mac
+brew install --cask tableplus
+```
+Windows: download from [tableplus.com](https://tableplus.com)
+
+**Connect using these exact settings:**
+
+![TablePlus connection settings](images/tableplus-connection.png)
+
+| Field    | Value            |
+|----------|------------------|
+| Host     | `127.0.0.1`      |
+| Port     | `5432`           |
+| User     | `postgres`       |
+| Password | `postgres`       |
+| Database | `campus_booking` |
+
+Click **Test** to verify the connection, then **Connect**.
+
+---
+
 ## Logging in
 
 After seeding, open `credentials.txt` to find login credentials. Some quick examples:
@@ -174,6 +216,8 @@ facility-booking/
 │   ├── test_concurrency_wallet.py
 │   ├── test_constraints.py
 │   └── test_rollback.py
+├── images/
+│   └── tableplus-connection.png   # TablePlus setup screenshot
 ├── TESTING.md          # Step-by-step manual testing guide
 └── requirements.txt
 ```
@@ -214,6 +258,7 @@ python seed.py
 | Error | Fix |
 |-------|-----|
 | `role "postgres" does not exist` | Run: `psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"` |
+| `psql: command not found` (Windows) | Add `C:\Program Files\PostgreSQL\16\bin` to your System PATH (see Installing PostgreSQL above) |
 | `connection refused on port 5432` | PostgreSQL is not running. Run: `brew services start postgresql@16` (Mac) or `sudo systemctl start postgresql` (Linux) |
 | `credentials.txt not found` when running tests | Run `python seed.py` first |
 | `API not reachable` in tests | Start the server: `uvicorn main:app --reload` |
