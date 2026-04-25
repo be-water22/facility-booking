@@ -83,9 +83,22 @@ sudo apt install postgresql python3 python3-pip python3-venv
 sudo systemctl start postgresql
 ```
 
-Then set the password for the `postgres` user to match the app:
+Set the password for the `postgres` user to match the app:
 ```bash
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+```
+
+PostgreSQL binaries on Ubuntu/Debian live under `/usr/lib/postgresql/16/bin/`. Add them to your PATH so `psql` and `createdb` work from any terminal:
+
+```bash
+echo 'export PATH="/usr/lib/postgresql/16/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Verify it works:
+```bash
+psql --version
+python3 --version
 ```
 
 ---
@@ -96,10 +109,17 @@ sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
 
 ```bash
 git clone https://github.com/be-water22/facility-booking.git
+```
+
+### 2. Navigate into the project folder
+
+```bash
 cd facility-booking
 ```
 
-### 2. Create a virtual environment and install dependencies
+All commands below assume you're inside the `facility-booking/` directory.
+
+### 3. Create a virtual environment and install dependencies
 
 ```bash
 python3 -m venv venv
@@ -113,7 +133,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Create the database and apply the schema
+### 4. Create the database and apply the schema
 
 ```bash
 createdb -U postgres campus_booking
@@ -122,7 +142,7 @@ psql -U postgres campus_booking < schema.sql
 
 Enter the password `postgres` when prompted. You should see a list of `CREATE TABLE`, `CREATE TRIGGER`, `CREATE INDEX` messages — that means the schema was applied successfully.
 
-### 4. Seed the database
+### 5. Seed the database
 
 > **Note:** Only run this once. Running it again will wipe all existing data and start fresh.
 
@@ -138,7 +158,7 @@ This creates:
 
 It also writes a `credentials.txt` file in the project folder with every user's email and password.
 
-### 5. Start the server
+### 6. Start the server
 
 ```bash
 uvicorn main:app --reload
@@ -164,14 +184,6 @@ Windows: download from [tableplus.com](https://tableplus.com)
 **Connect using these exact settings:**
 
 ![TablePlus connection settings](images/tableplus-connection.png)
-
-| Field    | Value            |
-|----------|------------------|
-| Host     | `127.0.0.1`      |
-| Port     | `5432`           |
-| User     | `postgres`       |
-| Password | `postgres`       |
-| Database | `campus_booking` |
 
 Click **Test** to verify the connection, then **Connect**.
 
@@ -224,24 +236,7 @@ Make sure the server is running (`uvicorn main:app --reload`) in one terminal, t
 pytest -v tests/
 ```
 
-Tests cover:
-- Concurrent slot booking (only 1 winner allowed)
-- Concurrent wallet operations
-- DB constraint checks (wallet balance, password format, etc.)
-- Transaction rollback on failure
-
----
-
-## Resetting the Database
-
-To wipe all data and start fresh:
-
-```bash
-dropdb campus_booking
-createdb campus_booking
-psql campus_booking < schema.sql
-python seed.py
-```
+For details on every test — concurrency races, ACID guarantees, trigger checks, rollback paths, and the DB constraints they exercise — see [TESTING.md](TESTING.md).
 
 ---
 
