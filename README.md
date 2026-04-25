@@ -34,6 +34,8 @@ Install these before starting:
 > | Host     | `localhost`      |
 > | Port     | `5432`           |
 
+![Mac Homebrew setup](images/tableplus-connection.png)
+
 ---
 
 ### Installing PostgreSQL
@@ -50,8 +52,6 @@ Homebrew does not create a `postgres` user by default. Run this once after insta
 ```bash
 psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
 ```
-
-![Mac Homebrew setup](images/tableplus-connection.png)
 
 ---
 
