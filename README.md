@@ -51,7 +51,7 @@ Homebrew does not create a `postgres` user by default. Run this once after insta
 psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
 ```
 
-![Mac Homebrew setup](images/mac-setup.png)
+![Mac Homebrew setup](images/tableplus-connection.png)
 
 ---
 
