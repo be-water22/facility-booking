@@ -34,8 +34,6 @@ Install these before starting:
 > | Host     | `localhost`      |
 > | Port     | `5432`           |
 
-![Mac Homebrew setup](images/tableplus-connection.png)
-
 ---
 
 ### Installing PostgreSQL
