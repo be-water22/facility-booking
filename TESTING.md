@@ -359,27 +359,7 @@ This is the *direct DB* version of test 7.1 — it confirms the trigger logic it
 
 ---
 
-## 10. Watching what's happening
-
-- **Watch every HTTP request:** start uvicorn with `--log-level debug`
-  ```bash
-  uvicorn main:app --reload --log-level debug
-  ```
-- **Watch every SQL statement:** edit `postgresql.conf` to enable `log_statement = 'all'` and tail the log:
-  ```bash
-  tail -f /opt/homebrew/var/log/postgresql@16.log         # Mac (Homebrew)
-  tail -f /var/log/postgresql/postgresql-16-main.log      # Linux
-  ```
-- **Browse data in TablePlus:** see [README.md](README.md) for connection settings.
-- **Interactive API:** http://localhost:8000/docs (Swagger UI — call any endpoint with a form).
-- **Direct psql shell:**
-  ```bash
-  psql -U postgres campus_booking
-  ```
-
----
-
-## 11. Resetting between manual sessions
+## 10. Resetting between manual sessions
 
 If you've been poking the DB by hand and want a clean slate:
 
