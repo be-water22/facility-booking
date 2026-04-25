@@ -16,6 +16,7 @@
 \usepackage{titlesec}
 \usepackage{fancyhdr}
 \usepackage{caption}
+\usepackage{float}
 
 \hypersetup{
     colorlinks=false,
@@ -87,7 +88,7 @@ The goal of the project is to demonstrate practical application of:
 
 \subsection{Technology Stack}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabularx}{0.8\textwidth}{lX}
 \toprule
@@ -108,7 +109,7 @@ The deliberate choice of \textbf{raw SQL} is to keep the database logic visible 
 
 The system supports four user roles, distinguished by the \texttt{base\_type} column in the \texttt{Users} table.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabularx}{\textwidth}{llX}
 \toprule
@@ -127,7 +128,7 @@ Admin          & 2  & All of the above + view all transactions across users, vie
 
 The seed script (\texttt{seed.py}) populates 50 users and writes \texttt{credentials.txt} with their email + password. Passwords follow the format \textbf{4 lowercase letters + 4 digits} (enforced by a database \texttt{CHECK} constraint).
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabularx}{\textwidth}{llX}
 \toprule
@@ -148,7 +149,7 @@ Faculty         & any \texttt{*@faculty.iitk.ac.in}       & see \texttt{credenti
 
 The system models 15 distinct facilities across 7 types:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabularx}{\textwidth}{llX}
 \toprule
@@ -361,19 +362,19 @@ $$ LANGUAGE plpgsql;
 
 Indexes accelerate the most frequent queries the API issues:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\footnotesize
+\small
 \setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}X@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}p{4.8cm}>{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Index} & \textbf{Table} & \textbf{Why} \\
 \midrule
-\texttt{idx\_facility\_slots\_facility} & \texttt{Facility\_Slots} \texttt{(facility\_id)} & Availability lookup is always filtered by facility. \\
-\texttt{idx\_bookings\_date\_status} & \texttt{Bookings} \texttt{(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
+\texttt{idx\_facility\_slots\_} \texttt{facility} & \texttt{Facility\_Slots} \texttt{(facility\_id)} & Availability lookup is always filtered by facility. \\
+\texttt{idx\_bookings\_date\_} \texttt{status} & \texttt{Bookings} \texttt{(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
 \texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots} \texttt{(slot\_id)} & Double-booking trigger queries by \texttt{slot\_id}; without this, every insert scans the table. \\
-\texttt{idx\_wallet\_tx\_user\_time} & \texttt{Wallet\_Transactions} \texttt{(user\_id, created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
-\texttt{idx\_facility\_rooms\_facility} & \texttt{Facility\_Rooms} \texttt{(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
+\texttt{idx\_wallet\_tx\_user\_} \texttt{time} & \texttt{Wallet\_Transactions} \texttt{(user\_id,} \texttt{created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
+\texttt{idx\_facility\_rooms\_} \texttt{facility} & \texttt{Facility\_Rooms} \texttt{(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
 \bottomrule
 \end{tabularx}
 \caption{Indexes for performance}
@@ -397,7 +398,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Login Screen}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{../images/login-screen.jpg}
 \caption{Login screen. Users authenticate with their campus email and an 8-character password (4 letters + 4 digits, enforced by a \texttt{CHECK} constraint).}
@@ -405,7 +406,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Student Profile and Wallet}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/profile-student.jpg}
 \caption{Student profile view showing user details, wallet balance, top-up form, and recent bookings. The wallet badge in the header is refreshed on every navigation to keep the displayed balance in sync with the database.}
@@ -413,7 +414,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Booking a Facility}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/book-slot.jpg}
 \caption{The booking flow. The user picks a facility type, a specific facility, a date, and (for hall guest rooms or the visitor hostel) a room. Available slots are computed server-side by excluding any slot already in a Pending or Confirmed booking on that date. Selected slots are highlighted in blue; the running total updates live.}
@@ -421,7 +422,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Wallet Transactions}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/my-transactions.jpg}
 \caption{The user's wallet transaction ledger --- every Deposit, Payment, and Refund. Sorted newest-first using the \texttt{idx\_wallet\_tx\_user\_time} index.}
@@ -429,7 +430,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Admin: All Transactions}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/admin-all-transactions.jpg}
 \caption{Admin-only "All Transactions" view. Lists every wallet transaction across every user, with filters by transaction type and user name. Net flow at the top of the table aggregates Deposits + Refunds minus Payments.}
@@ -437,7 +438,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Admin: Facility Utilization Report}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/admin-utilization.jpg}
 \caption{Admin "Utilization" report. Shows bookings, slots booked, and revenue per facility --- backed by a CTE that joins \texttt{Bookings}, \texttt{Booking\_Slots}, \texttt{Facility\_Slots}, and \texttt{Facilities} with optional date-range filters. Sorted by revenue descending.}
@@ -445,7 +446,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 \subsection{Admin: Facility Maintenance}
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/admin-facilities.jpg}
 \caption{Admin "Facilities" maintenance view. Toggling a facility off-line sets \texttt{is\_operational = FALSE}, which immediately removes it from the booking dropdown for non-admin users (the \texttt{/api/facilities} endpoint filters on this column).}
@@ -457,7 +458,7 @@ This section presents screenshots of the major screens. The application is a sin
 
 The project includes both a \textbf{manual UI testing plan} (\texttt{TESTING.md}) and an \textbf{automated pytest suite} of 17 tests covering all four ACID properties.
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../images/pytest-results.jpg}
 \caption{All 17 automated tests passing in 195 seconds. Four test files cover concurrency, constraints, rollback, and the wallet double-spend scenario.}
@@ -465,7 +466,7 @@ The project includes both a \textbf{manual UI testing plan} (\texttt{TESTING.md}
 
 \subsection{ACID Coverage Map}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{@{}lXc@{}}
