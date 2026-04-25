@@ -23,22 +23,53 @@ Install these before starting:
 - **Python 3.10+** — [python.org/downloads](https://www.python.org/downloads/)
 - **PostgreSQL 16** — [postgresql.org/download](https://www.postgresql.org/download/)
 
-> **Mac (Homebrew):**
-> ```bash
-> brew install postgresql@16 python@3.12
-> brew services start postgresql@16
-> echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zprofile
-> source ~/.zprofile
-> ```
+> **Important:** This app connects to PostgreSQL using the credentials below.
+> Make sure you use exactly these when installing or creating your PostgreSQL user:
+>
+> | Setting  | Value            |
+> |----------|------------------|
+> | User     | `postgres`       |
+> | Password | `postgres`       |
+> | Database | `campus_booking` |
+> | Host     | `localhost`      |
+> | Port     | `5432`           |
 
-> **Windows:** Install PostgreSQL from the official site. During install, set a password for the `postgres` user and remember it.
+---
 
-> **Linux (Ubuntu/Debian):**
-> ```bash
-> sudo apt install postgresql python3 python3-pip python3-venv
-> sudo systemctl start postgresql
-> sudo -u postgres createuser --superuser $USER
-> ```
+### Installing PostgreSQL
+
+**Mac (Homebrew):**
+```bash
+brew install postgresql@16 python@3.12
+brew services start postgresql@16
+echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zprofile
+source ~/.zprofile
+```
+
+Homebrew does not create a `postgres` user by default. Run this once after installing:
+```bash
+psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
+```
+
+---
+
+**Windows:**
+
+During the PostgreSQL installer, you will be asked to set a password for the `postgres` user.
+**Set it to `postgres`** so it matches the app's default config.
+
+---
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt install postgresql python3 python3-pip python3-venv
+sudo systemctl start postgresql
+```
+
+Then set the password for the `postgres` user to match the app:
+```bash
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+```
 
 ---
 
@@ -65,7 +96,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Create the PostgreSQL database and apply the schema
+### 3. Create the database and apply the schema
 
 ```bash
 createdb campus_booking
@@ -74,39 +105,19 @@ psql campus_booking < schema.sql
 
 You should see a list of `CREATE TABLE`, `CREATE TRIGGER`, `CREATE INDEX` messages — that means the schema was applied successfully.
 
-> **If `createdb` says "role does not exist"** (common on Mac with Homebrew):
+> **Windows:** Run these in the PostgreSQL shell instead:
 > ```bash
-> psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
+> psql -U postgres
 > ```
-> Then re-run the `createdb` and `psql` commands above.
-
-> **Windows:** Open pgAdmin or run `psql -U postgres` and use the password you set during install. Then:
 > ```sql
 > CREATE DATABASE campus_booking;
 > \q
 > ```
 > Then: `psql -U postgres campus_booking < schema.sql`
 
-### 4. Configure database connection (if needed)
+### 4. Seed the database
 
-By default the app connects as:
-
-| Setting  | Default value    |
-|----------|------------------|
-| Host     | `localhost`      |
-| Port     | `5432`           |
-| Database | `campus_booking` |
-| User     | `postgres`       |
-| Password | `postgres`       |
-
-If your PostgreSQL uses a different user or password, set environment variables before running:
-
-```bash
-export DB_USER=your_user
-export DB_PASSWORD=your_password
-```
-
-### 5. Seed the database
+> **Note:** Only run this once. Running it again will wipe all existing data and start fresh.
 
 ```bash
 python seed.py
@@ -120,7 +131,7 @@ This creates:
 
 It also writes a `credentials.txt` file in the project folder with every user's email and password.
 
-### 6. Start the server
+### 5. Start the server
 
 ```bash
 uvicorn main:app --reload
@@ -152,7 +163,7 @@ Password format is always: **4 lowercase letters + 4 digits** (e.g. `abcd1234`)
 ```
 facility-booking/
 ├── schema.sql          # 9 tables, 2 triggers, 5 indexes — the entire DB schema
-├── seed.py             # Fills the DB with realistic sample data
+├── seed.py             # Fills the DB with sample data (run once)
 ├── main.py             # FastAPI backend — all API endpoints
 ├── static/
 │   └── index.html      # Frontend — single page app (no framework)
