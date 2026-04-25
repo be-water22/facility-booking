@@ -47,7 +47,7 @@ random.seed(42)
 NUM_STUDENTS   = 30
 NUM_FACULTY    = 8
 NUM_ADMINS     = 2
-NUM_ORGS       = 10        # → 50 users total
+NUM_ORGS       = 10        # 50 users total
 DAYS_AHEAD     = 7         # one week of slots
 ORG_TYPES      = ("Club", "Festival_Committee", "Society")
 
@@ -311,31 +311,31 @@ def seed_sample_bookings(cur, user_ids: dict[str, list[int]]) -> None:
 
 
 def main() -> None:
-    print("→ Connecting to PostgreSQL …")
+    print("Connecting to PostgreSQL ...")
     conn = psycopg2.connect(**DB_CONFIG)
     conn.autocommit = False
     try:
         with conn.cursor() as cur:
-            print("→ Truncating existing data …")
+            print("Truncating existing data ...")
             truncate_all(cur)
 
-            print("→ Seeding users …")
+            print("Seeding users ...")
             user_ids = seed_users(cur)
 
-            print("→ Seeding facilities …")
+            print("Seeding facilities ...")
             facility_ids = seed_facilities(cur)
 
-            print("→ Seeding rooms (hall guest rooms + visitor hostel) …")
+            print("Seeding rooms (hall guest rooms + visitor hostel) ...")
             seed_rooms(cur)
 
-            print("→ Seeding facility slots (recurring daily timetable) …")
+            print("Seeding facility slots (recurring daily timetable) ...")
             seed_slots(cur, facility_ids)
 
-            print("→ Placing a few sample bookings …")
+            print("Placing a few sample bookings ...")
             seed_sample_bookings(cur, user_ids)
 
         conn.commit()
-        print("✓ Seed complete.")
+        print("Seed complete.")
 
         # Quick summary
         with conn.cursor() as cur:
@@ -354,7 +354,7 @@ def main() -> None:
 
     except Exception as exc:
         conn.rollback()
-        print(f"✗ Seed failed, rolled back: {exc}")
+        print(f"Seed failed, rolled back: {exc}")
         raise
     finally:
         conn.close()

@@ -51,6 +51,8 @@ Homebrew does not create a `postgres` user by default. Run this once after insta
 psql postgres -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
 ```
 
+![Mac Homebrew setup](images/mac-setup.png)
+
 ---
 
 **Windows:**
@@ -114,21 +116,11 @@ pip install -r requirements.txt
 ### 3. Create the database and apply the schema
 
 ```bash
-createdb campus_booking
-psql campus_booking < schema.sql
+createdb -U postgres campus_booking
+psql -U postgres campus_booking < schema.sql
 ```
 
-You should see a list of `CREATE TABLE`, `CREATE TRIGGER`, `CREATE INDEX` messages — that means the schema was applied successfully.
-
-> **Windows:** Run these in the PostgreSQL shell instead:
-> ```bash
-> psql -U postgres
-> ```
-> ```sql
-> CREATE DATABASE campus_booking;
-> \q
-> ```
-> Then: `psql -U postgres campus_booking < schema.sql`
+Enter the password `postgres` when prompted. You should see a list of `CREATE TABLE`, `CREATE TRIGGER`, `CREATE INDEX` messages — that means the schema was applied successfully.
 
 ### 4. Seed the database
 
