@@ -2,14 +2,13 @@
 conftest.py — pytest fixtures.
 
 - `api_url`   : returns the running API base URL; skips if the API is unreachable.
-- `fresh_db`  : re-runs seed.py so a test gets a pristine DB state.
+- `fresh_db`  : clears only bookings and transactions so tests get a clean slate
+                WITHOUT wiping users or facilities (seed.py only needs to be run once).
 - `db_conn`   : direct psycopg2 connection (for constraint / rollback tests).
 """
 from __future__ import annotations
 
 import os
-import subprocess
-import sys
 from pathlib import Path
 
 import httpx
@@ -40,13 +39,24 @@ def api_url() -> str:
 
 @pytest.fixture
 def fresh_db() -> None:
-    """Re-seed the database so the caller gets a known starting state."""
-    result = subprocess.run(
-        [sys.executable, "seed.py"], cwd=REPO_ROOT,
-        capture_output=True, text=True,
-    )
-    if result.returncode != 0:
-        pytest.fail(f"seed.py failed:\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
+    """Reset only transactional data between tests.
+
+    Truncates Booking_Slots, Bookings, and Wallet_Transactions and restores
+    every user's wallet to 1000 so tests have a predictable starting balance.
+    Users, Facilities, Facility_Rooms, and Facility_Slots are left untouched —
+    seed.py only needs to be run once during initial setup.
+    """
+    conn = psycopg2.connect(**DB_CONFIG)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                TRUNCATE Booking_Slots, Bookings, Wallet_Transactions
+                RESTART IDENTITY CASCADE;
+            """)
+            cur.execute("UPDATE Users SET wallet_balance = 1000.00;")
+        conn.commit()
+    finally:
+        conn.close()
 
 
 @pytest.fixture
