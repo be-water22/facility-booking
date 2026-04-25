@@ -389,12 +389,13 @@ function logout() {
 }
 
 // ============================ NAV ============================
-function showView(name) {
+async function showView(name) {
   for (const v of ["profile", "booking", "transactions", "admin", "util", "facilities"]) {
     document.getElementById("view-" + v).style.display = v === name ? "block" : "none";
     const btn = document.getElementById("nav-" + v);
     if (btn) btn.classList.toggle("active", v === name);
   }
+  await refreshUser();
   if (name === "profile")      renderProfile();
   if (name === "transactions") renderTransactions();
   if (name === "admin")        loadAdminTx();
