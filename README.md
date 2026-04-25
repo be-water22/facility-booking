@@ -1,6 +1,6 @@
 # Campus Facility Booking System
 
-A final-year DBMS project built with **PostgreSQL + FastAPI + raw SQL (no ORM) + Vanilla JS**.
+A final-year DBMS project built with **PostgreSQL + FastAPI + raw SQL + Vanilla JS**.
 
 Students, faculty, and organizations can log in, browse available time slots for campus facilities (seminar halls, labs, sports courts, guest rooms), pay from a wallet, and make bookings. The database enforces all correctness guarantees — ACID transactions, triggers, CHECK constraints, and partial UNIQUE indexes.
 

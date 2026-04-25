@@ -2,6 +2,8 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -15,48 +17,42 @@
 \usepackage{fancyhdr}
 \usepackage{caption}
 
-\definecolor{primary}{HTML}{1F3A68}
-\definecolor{accent}{HTML}{4A6FA5}
-\definecolor{codebg}{HTML}{F5F7FA}
-
 \hypersetup{
-    colorlinks=true,
-    linkcolor=primary,
-    urlcolor=accent,
-    citecolor=primary,
+    colorlinks=false,
+    pdfborder={0 0 0},
 }
 
 \titleformat{\section}
-  {\Large\bfseries\color{primary}}{\thesection}{1em}{}
+  {\Large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}
-  {\large\bfseries\color{primary}}{\thesubsection}{1em}{}
+  {\large\bfseries}{\thesubsection}{1em}{}
 \titleformat{\subsubsection}
-  {\normalsize\bfseries\color{accent}}{\thesubsubsection}{1em}{}
+  {\normalsize\bfseries}{\thesubsubsection}{1em}{}
 
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{\textcolor{primary}{Campus Facility Booking System}}
-\lhead{\textcolor{primary}{DBMS Project Report}}
+\rhead{Campus Facility Booking System}
+\lhead{DBMS Project Report}
 \rfoot{\thepage}
 
 \lstset{
     basicstyle=\ttfamily\footnotesize,
-    backgroundcolor=\color{codebg},
     breaklines=true,
     frame=single,
-    rulecolor=\color{accent!30},
-    keywordstyle=\color{primary}\bfseries,
-    commentstyle=\color{gray},
-    stringstyle=\color{accent},
+    keywordstyle=\bfseries,
 }
 
 \title{
     \vspace{-1cm}
-    \textbf{\Huge\textcolor{primary}{Campus Facility Booking System}}\\[0.3cm]
-    \Large A Final-Year DBMS Project\\[0.2cm]
-    \large PostgreSQL + FastAPI + Raw SQL
+    \textbf{\Huge Campus Facility Booking System}\\[0.3cm]
+    \Large A Final-Year DBMS Project
 }
-\author{}
+\author{
+    Abhishek Meena (220048) \\
+    Rythm Kumar (220925) \\
+    Shubhanshu Mishra (221048) \\
+    Subham Anand (221093)
+}
 \date{}
 
 \begin{document}
@@ -96,7 +92,7 @@ The goal of the project is to demonstrate practical application of:
 \toprule
 \textbf{Layer} & \textbf{Technology} \\
 \midrule
-Backend         & Python 3.10+, FastAPI, psycopg2 (raw SQL, no ORM) \\
+Backend         & Python 3.10+, FastAPI, psycopg2 (raw SQL) \\
 Database        & PostgreSQL 16 \\
 Frontend        & Vanilla HTML / CSS / JavaScript (single-page app) \\
 Testing         & pytest, httpx, ThreadPoolExecutor for concurrency \\
@@ -105,7 +101,7 @@ Testing         & pytest, httpx, ThreadPoolExecutor for concurrency \\
 \caption{Technology stack}
 \end{table}
 
-The deliberate choice of \textbf{raw SQL over an ORM} is to keep the database logic visible and to allow direct demonstration of SQL features such as triggers, constraints, advisory locks, and partial unique indexes.
+The deliberate choice of \textbf{raw SQL} is to keep the database logic visible at the application boundary and to allow direct demonstration of SQL features such as triggers, \texttt{CHECK} constraints, advisory locks, partial unique indexes, and explicit transaction control. Every query the application issues is the same query a database administrator would write, with no abstraction layer translating or hiding it. This makes the schema, the indexes, and the concurrency primitives the centerpiece of the project, which is the focus a DBMS course report demands.
 
 \subsection{User Types and Sample Credentials}
 
@@ -200,10 +196,10 @@ CREATE TABLE Users (
 
 \textbf{Constraints explained:}
 \begin{itemize}[leftmargin=*]
-    \item \texttt{email UNIQUE} — no two users can share an email.
-    \item \texttt{password} regex check — enforces format \texttt{[A-Za-z]\{4\}[0-9]\{4\}}.
-    \item \texttt{base\_type IN (...)} — only the four allowed roles.
-    \item \texttt{wallet\_balance >= 0} — invariant: wallet never goes negative, ever.
+    \item \texttt{email UNIQUE} --- no two users can share an email.
+    \item \texttt{password} regex check --- enforces format \texttt{[A-Za-z]\{4\}[0-9]\{4\}}.
+    \item \texttt{base\_type IN (...)} --- only the four allowed roles.
+    \item \texttt{wallet\_balance >= 0} --- invariant: wallet never goes negative, ever.
 \end{itemize}
 
 \subsubsection{\texttt{Students} and \texttt{Organizations}}
@@ -221,7 +217,7 @@ CREATE TABLE Organizations (
 );
 \end{lstlisting}
 
-\textbf{Foreign-key design:} \texttt{user\_id} is both the primary key and a foreign key to \texttt{Users}. Using \texttt{ON DELETE CASCADE} means deleting a user automatically removes their subtype row — the subtype row exists \emph{only} as a refinement of the user.
+\textbf{Foreign-key design:} \texttt{user\_id} is both the primary key and a foreign key to \texttt{Users}. Using \texttt{ON DELETE CASCADE} means deleting a user automatically removes their subtype row --- the subtype row exists \emph{only} as a refinement of the user.
 
 \subsubsection{\texttt{Wallet\_Transactions}}
 
@@ -237,7 +233,7 @@ CREATE TABLE Wallet_Transactions (
 );
 \end{lstlisting}
 
-This is an \textbf{immutable ledger} — once a row is inserted, it is never updated. Together with the wallet-balance invariant, this guarantees auditability: the sum of \texttt{amount * sign(transaction\_type)} over all rows for a user equals their current wallet balance.
+This is an \textbf{immutable ledger} --- once a row is inserted, it is never updated. Together with the wallet-balance invariant, this guarantees auditability: the sum of \texttt{amount * sign(transaction\_type)} over all rows for a user equals their current wallet balance.
 
 \subsection{Layer 2: Inventory}
 
@@ -307,9 +303,9 @@ CREATE UNIQUE INDEX uq_booking_slots_no_room
 
 \textbf{Key design choices:}
 \begin{itemize}[leftmargin=*]
-    \item \texttt{ON DELETE RESTRICT} on \texttt{Bookings.user\_id} — prevents deleting a user who has booking history. Bookings are an audit record.
-    \item \texttt{ON DELETE CASCADE} on \texttt{Booking\_Slots.booking\_id} — line items only exist as part of a booking; if the booking is hard-deleted (rare; we usually \texttt{Cancel} instead), the line items go with it.
-    \item Two \textbf{partial unique indexes} on \texttt{Booking\_Slots} — prevent the same slot appearing twice in one cart, with NULL-aware semantics. Standard \texttt{UNIQUE} treats two NULL \texttt{room\_id}s as distinct, which would let duplicates slip through; partial indexes split the world into "with room" and "without room" cases.
+    \item \texttt{ON DELETE RESTRICT} on \texttt{Bookings.user\_id} --- prevents deleting a user who has booking history. Bookings are an audit record.
+    \item \texttt{ON DELETE CASCADE} on \texttt{Booking\_Slots.booking\_id} --- line items only exist as part of a booking; if the booking is hard-deleted (rare; we usually \texttt{Cancel} instead), the line items go with it.
+    \item Two \textbf{partial unique indexes} on \texttt{Booking\_Slots} --- prevent the same slot appearing twice in one cart, with NULL-aware semantics. Standard \texttt{UNIQUE} treats two NULL \texttt{room\_id}s as distinct, which would let duplicates slip through; partial indexes split the world into "with room" and "without room" cases.
 \end{itemize}
 
 \subsection{Layer 4: Database-Level Enforcement (Triggers)}
@@ -372,7 +368,7 @@ Indexes accelerate the most frequent queries the API issues:
 \midrule
 \texttt{idx\_facility\_slots\_facility} & \texttt{Facility\_Slots(facility\_id)} & Availability lookup is always filtered by facility. \\
 \texttt{idx\_bookings\_date\_status} & \texttt{Bookings(booking\_date, status)} & Admin utilization report and availability checks scan by date+status. \\
-\texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots(slot\_id)} & The double-booking trigger queries Booking\_Slots by slot\_id — without this, every insert would scan the table. \\
+\texttt{idx\_booking\_slots\_slot} & \texttt{Booking\_Slots(slot\_id)} & The double-booking trigger queries Booking\_Slots by slot\_id --- without this, every insert would scan the table. \\
 \texttt{idx\_wallet\_tx\_user\_time} & \texttt{Wallet\_Transactions(user\_id, created\_at DESC)} & "My Transactions" page sorts a user's ledger newest-first. \\
 \texttt{idx\_facility\_rooms\_facility} & \texttt{Facility\_Rooms(facility\_id)} & Room dropdown listing for hall guest rooms / visitor hostel. \\
 \bottomrule
@@ -382,7 +378,7 @@ Indexes accelerate the most frequent queries the API issues:
 
 \subsection{Concurrency Control: Serializability}
 
-PostgreSQL's default \texttt{READ COMMITTED} isolation level is too weak for the booking workflow — two concurrent transactions can both see "no conflict" because neither has committed yet. Three layers ensure correct serializable behaviour:
+PostgreSQL's default \texttt{READ COMMITTED} isolation level is too weak for the booking workflow --- two concurrent transactions can both see "no conflict" because neither has committed yet. Three layers ensure correct serializable behaviour:
 
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Advisory locks (application layer)}: \texttt{create\_booking} calls \texttt{pg\_advisory\_xact\_lock(slot\_id, date\_int)} before any inserts. Concurrent requests for the same slot+date queue at this lock; the second only proceeds after the first commits or rolls back.
@@ -425,7 +421,7 @@ This section presents screenshots of the major screens. The application is a sin
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{../images/my-transactions.jpg}
-\caption{The user's wallet transaction ledger — every Deposit, Payment, and Refund. Sorted newest-first using the \texttt{idx\_wallet\_tx\_user\_time} index.}
+\caption{The user's wallet transaction ledger --- every Deposit, Payment, and Refund. Sorted newest-first using the \texttt{idx\_wallet\_tx\_user\_time} index.}
 \end{figure}
 
 \subsection{Admin: All Transactions}
@@ -441,7 +437,7 @@ This section presents screenshots of the major screens. The application is a sin
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{../images/admin-utilization.jpg}
-\caption{Admin "Utilization" report. Shows bookings, slots booked, and revenue per facility — backed by a CTE that joins \texttt{Bookings}, \texttt{Booking\_Slots}, \texttt{Facility\_Slots}, and \texttt{Facilities} with optional date-range filters. Sorted by revenue descending.}
+\caption{Admin "Utilization" report. Shows bookings, slots booked, and revenue per facility --- backed by a CTE that joins \texttt{Bookings}, \texttt{Booking\_Slots}, \texttt{Facility\_Slots}, and \texttt{Facilities} with optional date-range filters. Sorted by revenue descending.}
 \end{figure}
 
 \subsection{Admin: Facility Maintenance}
@@ -555,9 +551,9 @@ These hit PostgreSQL directly (bypassing the API) to verify every \texttt{CHECK}
 
 \textbf{Fixtures} (\texttt{tests/conftest.py}):
 \begin{itemize}[leftmargin=*]
-    \item \texttt{api\_url} — confirms the backend is reachable via \texttt{/api/health}; skips tests if not.
-    \item \texttt{fresh\_db} — truncates only the transactional tables (\texttt{Booking\_Slots}, \texttt{Bookings}, \texttt{Wallet\_Transactions}) and resets every wallet to Rs.1000. Users and facilities are preserved across runs.
-    \item \texttt{db\_conn} — a direct \texttt{psycopg2} connection in a transaction that's always rolled back at teardown. Used by constraint tests.
+    \item \texttt{api\_url} --- confirms the backend is reachable via \texttt{/api/health}; skips tests if not.
+    \item \texttt{fresh\_db} --- truncates only the transactional tables (\texttt{Booking\_Slots}, \texttt{Bookings}, \texttt{Wallet\_Transactions}) and resets every wallet to Rs.1000. Users and facilities are preserved across runs.
+    \item \texttt{db\_conn} --- a direct \texttt{psycopg2} connection in a transaction that's always rolled back at teardown. Used by constraint tests.
 \end{itemize}
 
 % =====================================================================
@@ -568,9 +564,9 @@ The Campus Facility Booking System demonstrates a database-first design philosop
 
 \textbf{Key takeaways:}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Schema in 3NF} — no redundant attributes, every fact in exactly one place.
-    \item \textbf{ACID guarantees} are not optional — every test in the suite exercises one or more of A, C, I, D.
-    \item \textbf{Concurrency cannot rely on triggers alone} — \texttt{READ COMMITTED} permits the trigger check to pass for both racers. Advisory locks plus row-level \texttt{FOR UPDATE} locks fill that gap and produce serializable behaviour.
+    \item \textbf{Schema in 3NF} --- no redundant attributes, every fact in exactly one place.
+    \item \textbf{ACID guarantees} are not optional --- every test in the suite exercises one or more of A, C, I, D.
+    \item \textbf{Concurrency cannot rely on triggers alone} --- \texttt{READ COMMITTED} permits the trigger check to pass for both racers. Advisory locks plus row-level \texttt{FOR UPDATE} locks fill that gap and produce serializable behaviour.
     \item \textbf{Partial unique indexes with NULL-aware predicates} elegantly solve the "same slot in multiple lines of one cart" duplication problem when \texttt{room\_id} is optional.
     \item \textbf{Audit invariants} are upheld at the database level, not by hopeful application code: \texttt{wallet\_balance >= 0}, \texttt{amount > 0}, \texttt{ON DELETE RESTRICT} on bookings.
 \end{itemize}
@@ -588,6 +584,6 @@ The codebase is intentionally minimal (\textasciitilde 600 lines of Python + \te
 \hrule
 \vspace{0.3cm}
 \centering
-\textcolor{primary}{\textit{Source code: \href{https://github.com/be-water22/facility-booking}{github.com/be-water22/facility-booking}}}
+\textit{Source code: \href{https://github.com/be-water22/facility-booking}{github.com/be-water22/facility-booking}}
 
 \end{document}
